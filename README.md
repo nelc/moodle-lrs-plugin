@@ -44,6 +44,14 @@ A Moodle local plugin that sends xAPI statements to an external Learning Record 
 Upload the plugin folder to your Moodle installation directory:
 
 ```bash
+moodle/public/local/
+```
+
+> **⚠️ IMPORTANT:** The plugin folder **must** be named exactly `moodle_lrs_plugin` for Moodle to detect it correctly. If you downloaded a zip file (e.g., `moodle-lrs-plugin-master.zip`), extract it and rename the folder to `moodle_lrs_plugin` before uploading.
+
+Final folder path after uploading:
+
+```bash
 moodle/public/local/moodle_lrs_plugin
 ```
 
@@ -167,4 +175,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 **Developed by:** Mohammed Hassan  
 **Copyright:** 2025  
-**Version:** 1.0.0
+**Version:** 2.0.2
