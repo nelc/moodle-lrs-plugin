@@ -149,7 +149,7 @@ Need help with installation, integration, or custom development?
 
 ### 📧 Email
 - [info@bzzix.com](mailto:info@bzzix.com)
-- [bzzix@gmail.com](mailto:bzzix@gmail.com)
+- [bzzixs@gmail.com](mailto:bzzix@gmail.com)
 
 ## 📄 License
 
