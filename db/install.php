@@ -38,5 +38,38 @@ function xmldb_local_moodle_lrs_plugin_install() {
         $dbman->add_field($resource_table, $resource_duration);
     }
 
+
+    // إنشاء قسم وحقل مخصص للهوية الوطنية إذا لم يكن موجوداً
+    $categoryname = 'NELC Profile Fields';
+    $customcategory = $DB->get_record('user_info_category', ['name' => $categoryname]);
+    if (!$customcategory) {
+        $customcategory = new \stdClass();
+        $customcategory->name = $categoryname;
+        $customcategory->sortorder = 99;
+        $customcategory->id = $DB->insert_record('user_info_category', $customcategory);
+    }
+
+    if (!$DB->record_exists('user_info_field', ['shortname' => 'national_id'])) {
+        $field = new \stdClass();
+        $field->shortname = 'national_id';
+        $field->name = 'رقم الهوية الوطنية / الإقامة';
+        $field->datatype = 'text';
+        $field->description = 'مطلوب للمركز الوطني للتعليم الإلكتروني (NELC)';
+        $field->descriptionformat = 1;
+        $field->categoryid = $customcategory->id;
+        $field->sortorder = 1;
+        $field->required = 1;
+        $field->locked = 0;
+        $field->visible = 2;
+        $field->forceunique = 0;
+        $field->signup = 1;
+        $field->defaultdata = '';
+        $field->defaultdataformat = 0;
+        $field->param1 = 30;
+        $field->param2 = 50;
+        $DB->insert_record('user_info_field', $field);
+    }
+
     return true;
 }
+

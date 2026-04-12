@@ -12,6 +12,20 @@ defined('MOODLE_INTERNAL') || die();
 
 class NotificationHelper {
 
+    public static function get_actor_name($userid) {
+        global $DB;
+        $user = $DB->get_record('user', ['id' => $userid], 'id, firstname, lastname, alternatename, middlename, firstnamephonetic, lastnamephonetic', MUST_EXIST);
+        
+        $national_id = $DB->get_field_sql("
+            SELECT uid.data 
+            FROM {user_info_data} uid
+            JOIN {user_info_field} uif ON uid.fieldid = uif.id
+            WHERE uif.shortname = 'national_id' AND uid.userid = ?", 
+            [$userid]);
+            
+        return !empty($national_id) ? trim($national_id) : fullname($user);
+    }
+
     public static function handleResponse($response) {
         if (!empty($response)) {
             if (isset($response['http_code'])) {

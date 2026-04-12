@@ -39,5 +39,39 @@ function xmldb_local_moodle_lrs_plugin_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025121020, 'local', 'moodle_lrs_plugin');
     }
 
+    if ($oldversion < 2025121021) {
+        $categoryname = 'NELC Profile Fields';
+        $customcategory = $DB->get_record('user_info_category', ['name' => $categoryname]);
+        if (!$customcategory) {
+            $customcategory = new \stdClass();
+            $customcategory->name = $categoryname;
+            $customcategory->sortorder = 99;
+            $customcategory->id = $DB->insert_record('user_info_category', $customcategory);
+        }
+
+        if (!$DB->record_exists('user_info_field', ['shortname' => 'national_id'])) {
+            $field = new \stdClass();
+            $field->shortname = 'national_id';
+            $field->name = 'رقم الهوية الوطنية / الإقامة';
+            $field->datatype = 'text';
+            $field->description = 'مطلوب للمركز الوطني للتعليم الإلكتروني (NELC)';
+            $field->descriptionformat = 1;
+            $field->categoryid = $customcategory->id;
+            $field->sortorder = 1;
+            $field->required = 1;
+            $field->locked = 0;
+            $field->visible = 2; // مرئي للجميع
+            $field->forceunique = 0;
+            $field->signup = 1; // إظهار في صفحة التسجيل
+            $field->defaultdata = '';
+            $field->defaultdataformat = 0;
+            $field->param1 = 30; // حجم مربع النص
+            $field->param2 = 50; // أقصى عدد للحروف
+            $DB->insert_record('user_info_field', $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2025121021, 'local', 'moodle_lrs_plugin');
+    }
+
     return true;
 }

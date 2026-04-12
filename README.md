@@ -1,6 +1,6 @@
-# Moodle LRS Plugin
+# Moodle LRS Plugin (NELC Integration)
 
-A Moodle local plugin that sends xAPI statements to an external Learning Record Store (LRS). Designed to integrate seamlessly with the Saudi National eLearning Center (NELC) and compatible with any xAPI-compliant LRS.
+A comprehensive Moodle local plugin that captures learning events and sends them as xAPI statements to an external Learning Record Store (LRS). This plugin is specifically designed to integrate seamlessly with the **Saudi National eLearning Center (NELC)** standards, and works efficiently with any standard xAPI-compliant LRS.
 
 ## 📋 Table of Contents
 
@@ -8,171 +8,134 @@ A Moodle local plugin that sends xAPI statements to an external Learning Record 
 - [Requirements](#-requirements)
 - [Installation](#-installation)
 - [Configuration](#-configuration)
-- [Database Schema](#-database-schema)
-- [xAPI Events](#-xapi-events)
+- [Database Schema & Profile Fields](#-database-schema--profile-fields)
+- [xAPI Events Tracking](#-xapi-events-tracking)
+- [Usage & User Profiling](#-usage--user-profiling)
+- [Upgrading](#-upgrading)
+- [Troubleshooting](#-troubleshooting)
 - [Support](#-support)
 - [License](#-license)
 
 ## ✨ Features
 
-- **xAPI Statement Generation** - Automatically generates and sends xAPI statements for key learning activities
-- **NELC Integration** - Full compatibility with Saudi National eLearning Center xAPI standards
-- **Course Duration Tracking** - Extended course and lesson metadata including duration fields
-- **Multi-language Support** - Platform names in both English and Arabic
-- **Activity Tracking** - Comprehensive tracking of:
-  - User activity initialization
-  - Course enrollment (registration)
-  - Video watching and virtual class attendance
-  - Lesson, module, and course completion
-  - Quiz attempts with scoring
-  - Learning progress tracking
-  - Course ratings and certificate issuance
+- **xAPI Statement Generation:** Automatically generates and sends compliant xAPI statements for key learning activities inside Moodle.
+- **NELC Compliance:** Perfectly tailored for the Saudi National eLearning Center xAPI guidelines. Uses National ID/Iqama as the actor identifier (`actor.name`).
+- **Automated Profile Fields:** Automatically builds required Moodle custom user profile fields (e.g. `national_id`) during installation or upgrade, and forces them to show during signup.
+- **Duration Tracking:** Extends Moodle’s course, lesson, and resource metadata with precise duration fields tailored for LRS statistics.
+- **Multi-language Support:** Adapts platform and course names in both English and Arabic dynamically based on user and course preferences.
+- **Micro-interactions Tracking:** Deep tracking for video watched, quiz attempts (with precise scoring mapping), completion statuses, and course ratings.
+- **Real-time Notifications:** Uses `iziToast` to immediately notify the learner of successful data delivery to the National Center upon completing tasks.
 
 ## 📦 Requirements
 
-| Component | Minimum Version |
+| Component | Required Version |
 |-----------|----------------|
-| Moodle | 4.0+ (2022041900) |
-| PHP | As per Moodle requirements |
-| Required Plugin | `tool_courserating` (any version) |
-| LRS | Any xAPI-compliant Learning Record Store |
+| Moodle | 4.0 or higher (Build: `2022041900+`) |
+| PHP | Compatible with your Moodle version |
+| Required Plugins | `tool_courserating` (Required for course ratings tracking) |
+| LRS | Any standard xAPI-compliant Learning Record Store (LRS) |
 
 ## 🚀 Installation
 
 ### Step 1: Upload Plugin Files
-
-Upload the plugin folder to your Moodle installation directory:
-
+Upload or extract the plugin folder into your Moodle’s `local` directory:
 ```bash
-moodle/public/local/
+/moodle_path/local/moodle_lrs_plugin
 ```
-
-> **⚠️ IMPORTANT:** The plugin folder **must** be named exactly `moodle_lrs_plugin` for Moodle to detect it correctly. If you downloaded a zip file (e.g., `moodle-lrs-plugin-master.zip`), extract it and rename the folder to `moodle_lrs_plugin` before uploading.
-
-Final folder path after uploading:
-
-```bash
-moodle/public/local/moodle_lrs_plugin
-```
+> **⚠️ IMPORTANT:** The folder must exactly be named `moodle_lrs_plugin` (not `moodle-lrs-plugin-master` or anything else) for Moodle to detect it.
 
 ### Step 2: Install via Moodle Interface
+1. Login to your Moodle as an **Administrator**.
+2. Navigate to **Site administration** → **Notifications**.
+3. Moodle will detect the plugin. Click **Upgrade Moodle database now**.
+4. *(Optional)* If Moodle warns about missing dependencies (like `tool_courserating`), install it first from the Moodle plugins directory, then resume this installation.
 
-1. Log in to your Moodle site as a **Site Administrator**
-2. Navigate to **Site administration** → **Notifications**
-3. Moodle will automatically detect the new plugin
-4. Click **Upgrade Moodle database now**
-
-### Step 3: Install Dependencies
-
-During installation, Moodle will check for required dependencies. If the `tool_courserating` plugin is missing:
-
-1. Install the required plugin from the Moodle plugins directory
-2. Return to the notifications page
-3. Complete the Moodle LRS Plugin installation
-
-### Step 4: Complete Setup
-
-Click **Continue** to finish the installation process.
+### Step 3: Complete Setup
+Upon clicking **Continue**, Moodle will execute the plugin's `install.php` which automatically creates the necessary database tables extensions and injects the `national_id` profile field into Moodle.
 
 ## ⚙️ Configuration
 
-After successful installation, configure the plugin settings:
-
-1. Navigate to: **Site administration** → **Plugins** → **Local plugins** → **Moodle LRS Plugin**
-2. Configure the following parameters:
+Configure the connection to your LRS by navigating to:
+**Site administration** → **Plugins** → **Local plugins** → **Moodle LRS Plugin**
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| **LRS Endpoint** | URL of your Learning Record Store | `https://lrs.example.com/xapi/` |
-| **LRS Username** | Authentication username for LRS | `moodle_user` |
-| **LRS Password** | Authentication password for LRS | `secure_password` |
-| **Platform Name (English)** | Platform display name in English | `National Learning Platform` |
-| **Platform Name (Arabic)** | Platform display name in Arabic | `المنصة الوطنية للتعلم` |
+| **LRS Endpoint** | Full URL of your LRS xAPI endpoint | `https://lrs.example.com/data/xAPI/` |
+| **LRS Username** | Basic Auth Username assigned by your LRS | `my_lrs_client` |
+| **LRS Password** | Basic Auth Password/Token assigned by your LRS | `my_secure_secret` |
+| **Platform Name (English)** | English name of your LMS | `National Learning Platform` |
+| **Platform Name (Arabic)** | Arabic name of your LMS | `المنصة الوطنية للتعلم` |
 
-3. Click **Save changes**
+## 🗄️ Database Schema & Profile Fields
 
-## 🗄️ Database Schema
+### Automatic Database Extensions
+The plugin automatically injects fields into existing Moodle tables without modifying core files:
+- **`mdl_course`**: Injects `course_duration`, `course_language`, and `is_nelc_enabled` (toggle NELC tracking on a per-course basis).
+- **`mdl_lesson`** and **`mdl_resource`**: Injects `lesson_duration` to define the duration in minutes.
 
-The plugin automatically extends existing Moodle tables with the following fields:
+### Automatic Profile Fields (National ID)
+During installation/upgrade, the plugin creates a Custom User Profile Field named **National ID / رقم الهوية الوطنية**:
+- **Shortname:** `national_id` (Programmatically queried by the plugin).
+- **Visibility:** Forced to appear on the User Signup page.
+- **Requirement:** Marked as *Required* so users cannot bypass it.
+The xAPI generator will always look for this `national_id` field and use it primarily as the `actor.name` identifier in the LRS payloads to meet NELC standards.
 
-### Course Table (`mdl_course`)
+## 📊 xAPI Events Tracking
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `course_duration` | INTEGER(10) | 0 | Course duration in minutes |
-| `course_language` | CHAR(10) | 'en-US' | Course language code |
-| `is_nelc_enabled` | INTEGER(1) | 1 | NELC integration flag |
+The plugin listens to various Moodle events and fires corresponding xAPI verbs:
 
-### Lesson Table (`mdl_lesson`)
+| Moodle Action | xAPI Verb | Payload / Context Details |
+|--------------|-----------|---------------------------|
+| **Course Enrollment** | `registered` / `initialized` | Triggers when a user fully registers. Contains learner's National ID, mobile, DoB, and instructor details. |
+| **Resource/Lesson Completing**| `completed` | Captures lesson/resource ID, title, and exact defined duration (`PTxxxM`). |
+| **Section Completion** | `completed` | Triggers a `CompletedUnit` event for a full section/module. |
+| **Course Progression** | `progressed` | Real-time percentage tracking based on completed tasks / total tasks in Moodle. |
+| **Quiz Submitted** | `attempted`| Passes the raw score, minimum passing score, max score, success (`true`/`false`), and completion status. |
+| **Course Completed** | `completed` | Triggered when `course_completed` event fires (student reaches 100% or Moodle completion rules met). |
+| **Course Rating** | `rated` | Hooks into `tool_courserating`. Fetches raw rating (0-5), scaled rating, and the text review/comment. |
+| **Video Watched** | `watched` | Tracks custom events related to video consumption durations. |
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `lesson_duration` | INTEGER(10) | 0 | Lesson duration in minutes |
+## 🧑‍💻 Usage & User Profiling
 
-### Resource Table (`mdl_resource`)
+For the integration to be fully valid according to NELC standards:
+1. Ensure the course has **NELC Tracking Enabled**. When editing a course, you will notice a new checkbox `[x] Enable NELC Integration`. Make sure this is ticked.
+2. Instructors must specify the **Course Duration** and **Course Language** accurately in the course settings page.
+3. Every user must have their **National ID** (`national_id`) filled out. The plugin ensures this displays on signup recursively.
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `lesson_duration` | INTEGER(10) | 0 | Resource duration in minutes |
+## 🔄 Upgrading
 
-> **Note:** All fields are created automatically during plugin installation. No manual database modifications are required.
+If you are upgrading from an older version of this plugin (e.g. before the auto-national-id implementations):
+1. Overwrite the `moodle_lrs_plugin` directory via FTP.
+2. Visit **Site administration** → **Notifications**.
+3. The plugin’s `upgrade.php` script will seamlessly execute, automatically creating the missing `national_id` user profile field and configuring it for signups without administrative intervention.
 
-## 📊 xAPI Events
+## 🛠️ Troubleshooting
 
-The plugin tracks and generates xAPI statements for the following Moodle events, fully compliant with NELC xAPI standards:
-
-### Supported Verbs & Activities
-
-| Event | Verb | Description | Activity Type |
-|-------|------|-------------|---------------|
-| **User Login** | `initialized` | Tracks when a learner successfully starts an activity in the LMS | N/A |
-| **Course Enrollment** | `registered` | Records when users officially enroll in a course | `course` |
-| **Video Watched** | `watched` | Captures video consumption (90% = watched) | `video` |
-| **Lesson Completed** | `completed` | Monitors individual lesson completions | `lesson` |
-| **Virtual Class Attended** | `attended` | Tracks attendance in live virtual classroom sessions | `virtual-classroom` |
-| **Quiz Attempted** | `attempted` | Records quiz attempts with scores and success status | `unit-test` / `assessment` |
-| **Module Completed** | `completed` | Captures completion of course modules/units | `module` |
-| **Course Progress** | `progressed` | Tracks ongoing learning progress percentage | `course` |
-| **Course Completed** | `completed` | Records full course completion | `course` |
-| **Course Rated** | `rated` | Captures learner ratings and reviews | `course` |
-| **Certificate Earned** | `earned` | Records certificate issuance with verification link | `certificate` |
-
-### Statement Features
-
-- **NELC Compliance**: All statements follow Saudi National eLearning Center xAPI profile guidelines
-- **Unique Identification**: Uses National ID/Iqama as actor identifier
-- **ISO Standards**: Durations in ISO 8601 format (`PT1H30M00S`), languages in ISO 639-1 (`ar-SA`, `en-US`)
-- **Hierarchical Context**: Maintains parent-child relationships between courses, modules, and activities
-- **Metadata Rich**: Includes instructor info, platform details, browser data, and custom NELC extensions
-
-All statements comply with xAPI 1.0.3 specification and NELC integration requirements.
+- **No connection to LRS / Connection timeout errors:**
+  - Verify your Moodle server has outgoing cURL access on the port required by your LRS endpoint.
+  - Review your Endpoint string carefully (typically ends with `/xAPI/` or `/statements`).
+- **Statements not recording:**
+  - Ensure the course setting `is_nelc_enabled` is checked.
+  - Make sure the user has a valid `national_id` set in their Moodle profile.
+- **cURL HTTP Code warnings inside Moodle:**
+  - The plugin leverages `iziToast` to push visible error notifications to the screen. If you get a 401 Unauthorized error in the notification, double check your LRS Basic Auth credentials.
 
 ## 📞 Support
 
-Need help with installation, integration, or custom development?
+For custom integrations, modifications, or enterprise support:
 
-### 📱 WhatsApp
-- [+20 100 094 4804](https://wa.me/201000944804)
-- [+20 106 233 2549](https://wa.me/201062332549)
-
-### 📧 Email
-- [info@bzzix.com](mailto:info@bzzix.com)
-- [bzzixs@gmail.com](mailto:bzzix@gmail.com)
+- **WhatsApp:** 
+  - [+20 100 094 4804](https://wa.me/201000944804)
+  - [+20 106 233 2549](https://wa.me/201062332549)
+- **Emails:** 
+  - [info@bzzix.com](mailto:info@bzzix.com)
+  - [bzzixs@gmail.com](mailto:bzzixs@gmail.com)
 
 ## 📄 License
 
-This plugin is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
-
-Custom modifications and enterprise support are available upon request.
+Licensed under the **MIT License**. Custom modifications and enterprise support are available upon request from the developer.
 
 ---
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
 **Developed by:** Mohammed Hassan  
 **Copyright:** 2025  
-**Version:** 2.0.2
+**Version:** 2.0.2 (Build 2025121021)

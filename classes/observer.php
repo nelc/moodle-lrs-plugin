@@ -73,7 +73,7 @@ class observer {
     
         $xapiSender = new XapiIntegration;
         $response = $xapiSender->Registered([
-            'name'       => fullname($user),
+            'name'       => NotificationHelper::get_actor_name($user->id),
             'email'      => $user->email,
             'duration' => $duration,
             'learneMobileNo' => $mobile ?: '',
@@ -92,7 +92,7 @@ class observer {
 
          $xapiSender2 = new XapiIntegration;
          $response2 = $xapiSender2->Initialized([
-             'name' => fullname($user),
+             'name' => NotificationHelper::get_actor_name($user->id),
              'email' => $user->email,
              'instructor' => $instructor ? fullname($instructor) : '',
              'inst_email' => $instructor ? $instructor->email : 'unknow@mail.com',
@@ -115,7 +115,7 @@ class observer {
         $completionstate = $event->other['completionstate'];
         
         $user = $DB->get_record('user', ['id' => $userid], 'id, firstname, lastname, email, firstnamephonetic, lastnamephonetic, middlename, alternatename');
-        $username = fullname($user);
+        $username = NotificationHelper::get_actor_name($userid);
         $useremail = $user->email;
     
         $course = $DB->get_record('course', ['id' => $courseid], 'id, fullname, summary, is_nelc_enabled, course_language');
@@ -283,7 +283,7 @@ class observer {
         // إرسال البيانات إلى xAPI
         $xapiSender = new XapiIntegration;
         $response = $xapiSender->Attempted([
-            'name'        => fullname($user),
+            'name'        => NotificationHelper::get_actor_name($user->id),
             'email'       => $user->email,
             'quizUrl'     => $CFG->wwwroot . '/mod/quiz/view.php?id=' . $quiz->id,
             'quizName'    => $quiz->name,
@@ -314,7 +314,7 @@ class observer {
         $courseid = $event->courseid;
 
         $user = $DB->get_record('user', ['id' => $userid], 'id, firstname, lastname, email, firstnamephonetic, lastnamephonetic, middlename, alternatename');
-        $username = fullname($user);
+        $username = NotificationHelper::get_actor_name($userid);
         $useremail = $user->email;
     
         // جلب بيانات الدورة
@@ -422,7 +422,7 @@ class observer {
         // إرسال بيان xAPI
         $xapiSender = new XapiIntegration;
         $response = $xapiSender->Rated([
-            'name' => fullname($user),
+            'name' => NotificationHelper::get_actor_name($user->id),
             'email' => $user->email,
             'courseId' => $course->id,
             'courseName' => $course->fullname,
@@ -483,7 +483,7 @@ class observer {
         // تجهيز البيانات وإرسالها
         $xapiSender = new XapiIntegration;
         $response = $xapiSender->Rated([
-            'name' => fullname($user),
+            'name' => NotificationHelper::get_actor_name($user->id),
             'email' => $user->email,
             'courseId' => $course->id,
             'courseName' => $course->fullname,
@@ -541,7 +541,7 @@ class observer {
         // تجهيز البيانات وإرسالها
         $xapiSender = new XapiIntegration;
         $response = $xapiSender->Rated([
-            'name' => fullname($user),
+            'name' => NotificationHelper::get_actor_name($user->id),
             'email' => $user->email,
             'courseId' => $course->id,
             'courseName' => $course->fullname,
@@ -573,7 +573,7 @@ class observer {
 
         // جلب بيانات المستخدم من قاعدة البيانات
         $user = $DB->get_record('user', ['id' => $userId], 'id, firstname, lastname, email, firstnamephonetic, lastnamephonetic, middlename, alternatename');
-        $username = fullname($user);
+        $username = NotificationHelper::get_actor_name($userId);
         $useremail = $user->email;
     
         // جلب بيانات الدورة التدريبية

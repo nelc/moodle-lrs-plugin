@@ -10,7 +10,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_moodle_lrs_plugin';
-$plugin->version   = 2025121020; // YYYYMMDDXX (تاريخ الإصدار)
+$plugin->version   = 2025121021; // YYYYMMDDXX (تاريخ الإصدار)
 $plugin->requires  = 2022041900; // الحد الأدنى من إصدار Moodle (Moodle 4.0)
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '2.0.2';
