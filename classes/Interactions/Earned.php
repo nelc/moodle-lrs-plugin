@@ -30,10 +30,19 @@ class Earned
         $actorEmail = $data['email'];
         $courseId = $CFG->wwwroot . '/course/view.php?id=' . $data['courseId'];
         $courseTitle = $data['courseName'];
-        $courseDesc = $data['courseDesc'];
+        $courseDesc = '';
         $this->lang = $data['courseLang'] ?? 'en-US';
-        $certUrl = $data['certUrl'];
-        $certName = $data['certName'];
+
+        // Normalize and validate certificate URL
+        $certUrlRaw = isset($data['certUrl']) ? trim($data['certUrl']) : '';
+        if ($certUrlRaw !== '' && strpos($certUrlRaw, '/') === 0) {
+            // relative path -> make absolute using wwwroot
+            $certUrlRaw = rtrim($CFG->wwwroot, '/') . $certUrlRaw;
+        }
+        $certUrl = filter_var($certUrlRaw, FILTER_VALIDATE_URL) ? $certUrlRaw : '';
+
+        // Sanitize certificate name
+        $certName = isset($data['certName']) ? trim(strip_tags($data['certName'])) : '';
 
         $vars = array(
             'actor' => array(

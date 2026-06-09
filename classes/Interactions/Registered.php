@@ -29,15 +29,15 @@ class Registered
         $instructor = $data['instructor'];
         $instructorEmail = $data['inst_email'];
         $courseId = $CFG->wwwroot . '/course/view.php?id=' . $data['courseId'];
-        $courseTitle = $data['courseName'];
-        $courseDesc = $data['courseDesc'];
+        $courseTitle = trim(strip_tags($data['courseName'] ?? ''));
+        $courseDesc = isset($data['courseDesc']) ? trim(strip_tags($data['courseDesc'])) : '';
         $this->lang = $data['courseLang'] ?? 'en-US';
         $duration = $data['duration'];
         $learneMobileNo = $data['learneMobileNo'];
         $learnerFullName = $data['learnerFullName'];
         $learnerNationality = $data['learnerNationality'];
         $dateOfBirth = $data['dateOfBirth'];
-
+    
         $vars = array(
             'actor' => array(
                         'name' => strval($actor),
@@ -65,6 +65,8 @@ class Registered
                             'platform' => strval($this->platform),
                             'language' => strval($this->lang),
                             "extensions" => array(
+                                'https://nelc.gov.sa/extensions/lms_url' => strval($CFG->wwwroot),
+                                'https://nelc.gov.sa/extensions/program_url' => strval($courseId),
                                 'https://nelc.gov.sa/extensions/duration'=> $duration,
                                 'https://nelc.gov.sa/extensions/learner_mobile_no'=> $learneMobileNo,
                                 'https://nelc.gov.sa/extensions/learner_full_name'=> $learnerFullName,

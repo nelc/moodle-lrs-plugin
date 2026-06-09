@@ -29,8 +29,7 @@ class Initialized
         $instructor = $data['instructor'];
         $instructorEmail = $data['inst_email'];
         $courseId = $CFG->wwwroot . '/course/view.php?id=' . $data['courseId'];
-        $courseTitle = $data['courseName'];
-        $courseDesc = $data['courseDesc'];
+        $courseTitle = trim(strip_tags($data['courseName'] ?? ''));
         $this->lang = $data['courseLang'] ?? 'en-US';
 
         $vars = array(
@@ -47,7 +46,6 @@ class Initialized
                             'id'=> strval($courseId),
                             'definition' => array(
                                 'name' => array(strval($this->lang) => strval($courseTitle)),
-                                'description' => array(strval($this->lang) => strval($courseDesc)),
                                 'type' => 'https://w3id.org/xapi/cmi5/activitytype/course'
                             ),
                             'objectType' => 'Activity',

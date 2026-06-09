@@ -39,7 +39,7 @@ class Attempted
         $attempNumber = $data['attempNumber'];
         $courseId = $CFG->wwwroot . '/course/view.php?id=' . $data['courseId'];
         $courseName = $data['courseName'];
-        $courseDesc = $data['courseDesc'];
+        $courseDesc = '';
         $this->lang = $data['courseLang'] ?? 'en-US';
         $scaled = $data['scaled'];
         $raw = $data['raw'];

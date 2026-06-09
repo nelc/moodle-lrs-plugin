@@ -91,10 +91,10 @@ class NotificationHelper {
     public static function is_section_completed($sectionid, $courseid, $userid) {
         global $DB;
     
-        // جلب جميع الأنشطة داخل الوحدة والتي لم يتم حذفها أو إخفاؤها
+        // جلب الأنشطة داخل الوحدة التي لم يتم حذفها أو إخفاؤها وتم تفعيل تتبع الإكمال لها فقط
         $activities = $DB->get_records_select(
             'course_modules', 
-            'section = :sectionid AND course = :courseid AND deletioninprogress = 0 AND visible = 1',
+            'section = :sectionid AND course = :courseid AND deletioninprogress = 0 AND visible = 1 AND completion > 0',
             ['sectionid' => $sectionid, 'courseid' => $courseid]
         );
     
@@ -104,8 +104,8 @@ class NotificationHelper {
                 'userid' => $userid
             ]);
     
-            // إذا كان هناك نشاط غير مكتمل، فإن الوحدة غير مكتملة
-            if (!$completion || $completion->completionstate != 1) {
+            // إذا كان هناك نشاط غير مكتمل (الحالات المكتملة المقبولة هي 1 أو 2)، فإن الوحدة غير مكتملة
+            if (!$completion || !in_array($completion->completionstate, [1, 2])) {
                 return false;
             }
         }

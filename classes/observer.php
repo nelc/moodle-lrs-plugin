@@ -353,6 +353,24 @@ class observer {
         ]);
 
         NotificationHelper::handleResponse($response);
+
+        // إرسال حدث Earned (منح الشهادة) فور إتمام الكورس
+        $certUrl = $CFG->wwwroot . '/course/view.php?id=' . $courseid;
+        $certName = $coursename;
+
+        $xapiSenderEarned = new XapiIntegration;
+        $responseEarned = $xapiSenderEarned->Earned([
+            'name'       => $username,
+            'email'      => $useremail,
+            'courseId'   => $courseid,
+            'courseName' => $coursename,
+            'courseDesc' => $coursedesc,
+            'courseLang' => $courseLang,
+            'certUrl'    => $certUrl,
+            'certName'   => $certName,
+        ]);
+
+        NotificationHelper::handleResponse($responseEarned);
     }
     
     public static function course_reviewed($event)

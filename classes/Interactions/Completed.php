@@ -37,7 +37,7 @@ class Completed
         $instructorEmail = $data['inst_email'];
         $courseId = $CFG->wwwroot . '/course/view.php?id=' . $data['courseId'];
         $courseTitle = $data['courseName'];
-        $courseDesc = $data['courseDesc'];
+        $courseDesc = '';
         $this->lang = $data['courseLang'] ?? 'en-US';
         $lessonDuration = $data['lessonDuration'];
 

@@ -31,7 +31,7 @@ class Progressed
         $instructorEmail = $data['inst_email'];
         $courseId = $CFG->wwwroot . '/course/view.php?id=' . $data['courseId'];
         $courseTitle = $data['courseName'];
-        $courseDesc = $data['courseDesc'];
+        $courseDesc = ''
         $scaled = $data['scaled'];
         $completion = $data['completion'];
         $this->lang = $data['courseLang'] ?? 'en-US';
