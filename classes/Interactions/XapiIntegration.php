@@ -64,7 +64,9 @@ class XapiIntegration {
     
         $options = array(
             'CURLOPT_RETURNTRANSFER' => true,
-            'CURLOPT_HTTPHEADER' => $headers
+            'CURLOPT_HTTPHEADER' => $headers,
+            'CURLOPT_CONNECTTIMEOUT' => 2, // 2 seconds timeout to establish connection
+            'CURLOPT_TIMEOUT' => 5        // 5 seconds max duration for the API call
         );
     
         $response = $curl->post($url, json_encode($data), $options);
@@ -93,14 +95,9 @@ class XapiIntegration {
     
 
     // فحص الاتصال بالإنترنت
+    // فحص الاتصال بالإنترنت - تم التعديل لتفادي البطء الناتج عن الاتصال بموقع خارجي غير ضروري
     private function checkInternetConnection($url = "www.google.com", $port = 80, $timeout = 5) {
-        $connected = @fsockopen($url, $port, $errno, $errstr, $timeout);
-        if ($connected) {
-            fclose($connected);
-            return true; // الاتصال بالإنترنت متاح
-        } else {
-            return false; // لا يوجد اتصال بالإنترنت
-        }
+        return true; // Bypass connection check to prevent page load delays
     }
 
     public function Registered( $data)

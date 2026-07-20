@@ -10,10 +10,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_moodle_lrs_plugin';
-$plugin->version   = 2026060900; // YYYYMMDDXX (تاريخ الإصدار)
+$plugin->version   = 2026072000; // YYYYMMDDXX (تاريخ الإصدار)
 $plugin->requires  = 2022041900; // الحد الأدنى من إصدار Moodle (Moodle 4.0)
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '2.0.4';
+$plugin->release = '2.0.5';
 $plugin->dependencies = [
     'tool_courserating' => ANY_VERSION, // هذا البلاجن مطلوب
 ];

@@ -95,6 +95,22 @@ The plugin listens to various Moodle events and fires corresponding xAPI verbs:
 | **Course Rating** | `rated` | Hooks into `tool_courserating`. Fetches raw rating (0-5), scaled rating, and the text review/comment. |
 | **Video Watched** | `watched` | Tracks custom events related to video consumption durations. |
 
+## 🏗️ Architecture & Technical Details
+
+The plugin is architected using modular, event-driven layers to decouple event interception from xAPI schema generation and network transport:
+
+1. **Event Observers (`db/events.php` & `classes/observer.php`):**
+   Moodle's internal Event Dispatcher fires standard events (e.g., student enrolment, quiz attempt submission, or course module completion). The plugin listens to these events and passes context data (like course, user, and module information) to the observer helper.
+2. **xAPI Interactions Classes (`classes/Interactions/`):**
+   Every verb is decoupled into its own class (e.g., `Registered.php`, `Completed.php`, `Attempted.php`, etc.). These classes receive context variables and return standard xAPI JSON payload arrays conforming to the ADL LRS and Saudi National Center (NELC) specifications, using appropriate extensions:
+   * `https://nelc.gov.sa/extensions/platform`: Platform info.
+   * `https://nelc.gov.sa/extensions/duration`: Course/lesson duration.
+   * `https://nelc.gov.sa/extensions/learner_mobile_no`, `learner_full_name`, `learner_nationality`, `date_of_birth`: Learner profile variables.
+3. **AJAX Video Tracking (`assets/js/frontend.js` & `classes/external.php`):**
+   For HTML5 video resources, a frontend JS script tracks playback in the browser. When the student watches $\ge 80\%$ of the video duration, the script fires a non-blocking Moodle AMD AJAX call (`local_moodle_lrs_plugin_trigger_video_watched`), triggering a custom event that dispatches the `watched` statement.
+4. **National ID Provisioning:**
+   During plugin installation or upgrade, `db/install.php` and `db/upgrade.php` programmatically inject the `national_id` profile field, force it to be required on the user signup page, and configure it as the primary `actor.name` identifier in statement dispatching.
+
 ## 🧑‍💻 Usage & User Profiling
 
 For the integration to be fully valid according to NELC standards:
@@ -135,7 +151,17 @@ For custom integrations, modifications, or enterprise support:
 
 Licensed under the **MIT License**. Custom modifications and enterprise support are available upon request from the developer.
 
+## 🔄 Changelog & Version History
+
+### Version 2.0.5 (Released: 2026-07-20)
+*   **Fixed Division by Zero in Quizzes:** Corrected a calculation crash in `observer::quiz_attempt_submitted()` when graded quizzes had a maximum grade of `0`.
+*   **Fixed Syntax Error in Progress Tracking:** Added a missing semicolon in `Progressed.php` that threw a `ParseError` on student progress updates.
+*   **Performance Optimizations:** Bypassed the redundant external TCP check to `google.com` inside `checkInternetConnection()`, preventing transaction bottlenecks. Added connection (2s) and request execution (5s) timeouts to cURL configurations to prevent Moodle sessions from freezing when LRS endpoints are unresponsive.
+
+### Version 2.0.4
+*   First stable release mapping standard cmi5 and xAPI interactions for Saudi National eLearning Center integration.
+
 ---
 **Developed by:** Mohammed Hassan  
-**Copyright:** 2025  
-**Version:** 2.0.2 (Build 2025121021)
+**Copyright:** 2025-2026  
+**Version:** 2.0.5 (Build 2026072000)
