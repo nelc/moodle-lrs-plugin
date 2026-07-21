@@ -138,4 +138,4 @@ Licensed under the **MIT License**. Custom modifications and enterprise support 
 ---
 **Developed by:** Mohammed Hassan  
 **Copyright:** 2025  
-**Version:** 2.0.2 (Build 2025121021)
+**Version:** 2.0.5 (Build 2026072100)

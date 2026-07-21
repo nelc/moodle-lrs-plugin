@@ -278,7 +278,7 @@ class observer {
         ", ['courseid' => $course->id]);
     
         // حساب الدرجة النهائية كنسبة مئوية
-        $scaled_score = ($attempt->sumgrades / $quiz->grade);
+        $scaled_score = ($quiz->grade > 0) ? ($attempt->sumgrades / $quiz->grade) : 0.0;
     
         // إرسال البيانات إلى xAPI
         $xapiSender = new XapiIntegration;
