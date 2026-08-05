@@ -164,7 +164,16 @@ class XapiIntegration {
         $var = $instance->Send( $data );
 
         // Send CompletedCourse statement
-        return $this->sendXAPIRequest( $var );
+        $completedResponse = $this->sendXAPIRequest( $var );
+
+        // Immediately send Earned statement after Completed
+        $earnedResponse = $this->Earned( $data );
+
+        return [
+            'completed' => $completedResponse,
+            'earned' => $earnedResponse,
+            'http_code' => isset($completedResponse['http_code']) ? $completedResponse['http_code'] : 0
+        ];
     }
 
     public function Earned( $data = [] )

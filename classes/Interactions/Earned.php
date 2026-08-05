@@ -55,7 +55,7 @@ class Earned
                         'display' => array("en-US" => "earned") 
                     ),
             'object' => array(
-                            'id'=> strval($courseId) . '&cert_id=' . $data['courseId'],
+                            'id'=> strval($certUrl) . '#certificate-' . $data['courseId'],
                             'definition' => array(
                                 'name' => array($this->lang => strval($certName)),
                                 'type' => 'https://www.opigno.org/en/tincan_registry/activity_type/certificate'

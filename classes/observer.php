@@ -260,9 +260,10 @@ class observer {
         }       
         
 
-        // إرسال إكمال الدورة
+        // إرسال إكمال الدورة والشهادة معاً
         if( $completion_rate >= 100){
             $prefkey_course = 'local_moodle_lrs_comp_course_' . $courseid;
+            $prefkey_earned = 'local_moodle_lrs_earned_' . $courseid;
             if (!get_user_preferences($prefkey_course, null, $userid)) {
                 $xapiSender22 = new XapiIntegration;
                 $response22 = $xapiSender22->CompletedCourse([
@@ -279,26 +280,6 @@ class observer {
                 NotificationHelper::handleResponse($response22);
                 if (isset($response22['http_code']) && $response22['http_code'] == 200) {
                     set_user_preference($prefkey_course, 1, $userid);
-                }
-            }
-
-            $prefkey_earned = 'local_moodle_lrs_earned_' . $courseid;
-            if (!get_user_preferences($prefkey_earned, null, $userid)) {
-                $certUrl = $CFG->wwwroot . '/course/view.php?id=' . $courseid;
-                $certName = $coursename;
-                $xapiSenderEarned = new XapiIntegration;
-                $responseEarned = $xapiSenderEarned->Earned([
-                    'name'       => $username,
-                    'email'      => $useremail,
-                    'courseId'   => $courseid,
-                    'courseName' => $coursename,
-                    'courseDesc' => $coursedesc,
-                    'courseLang' => $courseLang,
-                    'certUrl'    => $certUrl,
-                    'certName'   => $certName,
-                ]);
-                NotificationHelper::handleResponse($responseEarned);
-                if (isset($responseEarned['http_code']) && $responseEarned['http_code'] == 200) {
                     set_user_preference($prefkey_earned, 1, $userid);
                 }
             }
@@ -399,6 +380,7 @@ class observer {
         $inst_email = $instructor && !empty($instructor->email) ? $instructor->email : 'unknown@mail.com';        
 
         $prefkey_course = 'local_moodle_lrs_comp_course_' . $courseid;
+        $prefkey_earned = 'local_moodle_lrs_earned_' . $courseid;
         if (!get_user_preferences($prefkey_course, null, $userid)) {
             $xapiSender = new XapiIntegration;
             $response = $xapiSender->CompletedCourse([
@@ -414,28 +396,6 @@ class observer {
             NotificationHelper::handleResponse($response);
             if (isset($response['http_code']) && $response['http_code'] == 200) {
                 set_user_preference($prefkey_course, 1, $userid);
-            }
-        }
-
-        // إرسال حدث Earned (منح الشهادة) فور إتمام الكورس
-        $prefkey_earned = 'local_moodle_lrs_earned_' . $courseid;
-        if (!get_user_preferences($prefkey_earned, null, $userid)) {
-            $certUrl = $CFG->wwwroot . '/course/view.php?id=' . $courseid;
-            $certName = $coursename;
-
-            $xapiSenderEarned = new XapiIntegration;
-            $responseEarned = $xapiSenderEarned->Earned([
-                'name'       => $username,
-                'email'      => $useremail,
-                'courseId'   => $courseid,
-                'courseName' => $coursename,
-                'courseDesc' => $coursedesc,
-                'courseLang' => $courseLang,
-                'certUrl'    => $certUrl,
-                'certName'   => $certName,
-            ]);
-            NotificationHelper::handleResponse($responseEarned);
-            if (isset($responseEarned['http_code']) && $responseEarned['http_code'] == 200) {
                 set_user_preference($prefkey_earned, 1, $userid);
             }
         }
