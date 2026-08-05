@@ -146,6 +146,10 @@ class observer {
         $inst_name = $instructor ? fullname($instructor) : 'غير معروف';
         $inst_email = $instructor && !empty($instructor->email) ? $instructor->email : 'unknown@mail.com';        
     
+        $prefkey_act = 'local_moodle_lrs_comp_act_' . $coursemoduleid;
+        if ($completionstate == 0) {
+            set_user_preference($prefkey_act, null, $userid);
+        }
 
         if( ($cm->modname == 'lesson' || $cm->modname == 'resource') && $completionstate == 1){
 
@@ -154,84 +158,55 @@ class observer {
             $is_video = NotificationHelper::is_resource_video($lesson->id);
             if( !$is_video ){
 
-                $hours = 0;
-                $minutes = 0;
-                if (isset($lesson->lesson_duration)) {
-                    $hours = floor($lesson->lesson_duration / 60);
-                    $minutes = $lesson->lesson_duration % 60;
+                if (!get_user_preferences($prefkey_act, null, $userid)) {
+                    $hours = 0;
+                    $minutes = 0;
+                    if (isset($lesson->lesson_duration)) {
+                        $hours = floor($lesson->lesson_duration / 60);
+                        $minutes = $lesson->lesson_duration % 60;
+                    }
+                    // تنسيق المدة
+                    $lessonDuration = sprintf('PT%02dH%02dM00S', $hours, $minutes);
+
+                    $xapiSender = new XapiIntegration;
+                    $response = $xapiSender->Completed([
+                        'name' => $username,
+                        'email' => $useremail,
+                        'lessonUrl' => $activityurl,
+                        'lessonName' => $activityname,
+                        'lessonDesc' => "Activity '{$activityname}' in course '{$coursename}'",
+                        'instructor' => $inst_name,
+                        'inst_email' => $inst_email,
+                        'courseId' => $courseid,
+                        'courseName' => $coursename,
+                        'courseDesc' => $coursedesc,
+                        'courseLang' => $courseLang,
+                        'lessonDuration' => $lessonDuration,
+                    ]);
+
+                    NotificationHelper::handleResponse($response);
+                    if (isset($response['http_code']) && $response['http_code'] == 200) {
+                        set_user_preference($prefkey_act, 1, $userid);
+                    }
                 }
-                // تنسيق المدة
-                $lessonDuration = sprintf('PT%02dH%02dM00S', $hours, $minutes);
-
-                $xapiSender = new XapiIntegration;
-                $response = $xapiSender->Completed([
-                    'name' => $username,
-                    'email' => $useremail,
-                    'lessonUrl' => $activityurl,
-                    'lessonName' => $activityname,
-                    'lessonDesc' => "Activity '{$activityname}' in course '{$coursename}'",
-                    'instructor' => $inst_name,
-                    'inst_email' => $inst_email,
-                    'courseId' => $courseid,
-                    'courseName' => $coursename,
-                    'courseDesc' => $coursedesc,
-                    'courseLang' => $courseLang,
-                    'lessonDuration' => $lessonDuration,
-                ]);
-
-                NotificationHelper::handleResponse($response);
 
             }
         }
         // إرسال تقدم الدورة
         $completion_rate = NotificationHelper::get_course_completion_percentage($userid, $courseid);
-        $xapiSender2 = new XapiIntegration;
-        $response2 = $xapiSender2->Progressed([
-            'name' => $username,
-            'email' => $useremail,
-            'courseId' => $courseid,
-            'courseName' => $coursename,
-            'courseDesc' => $coursedesc,
-            'courseLang' => $courseLang,
-            'instructor' => $inst_name,
-            'inst_email' => $inst_email,
-            'scaled' => $completion_rate > 0 ? round($completion_rate / 100, 2) : 0,
-            'completion' => $completion_rate == 100 ? true : false,
-        ]);
-        NotificationHelper::handleResponse($response2);
+        
+        $prefkey_prog = 'local_moodle_lrs_prog_' . $courseid;
+        $last_progress = get_user_preferences($prefkey_prog, null, $userid);
+        
+        // التحقق من إعادة ضبط المقرر لإلغاء التفضيلات المخزنة
+        if ($last_progress !== null && (float)$completion_rate < (float)$last_progress) {
+            set_user_preference('local_moodle_lrs_comp_course_' . $courseid, null, $userid);
+            set_user_preference('local_moodle_lrs_earned_' . $courseid, null, $userid);
+        }
 
-        // إرسال إكمال الوحدة
-        $sectionid = NotificationHelper::get_section_id_from_activity($coursemoduleid);
-        if ($sectionid) {
-            $secTCompleted = NotificationHelper::is_section_completed($sectionid, $courseid, $userid);
-        
-            if ($secTCompleted) {
-                $section = $DB->get_record('course_sections', ['id' => $sectionid], 'name, summary');
-                
-                $xapiSender3 = new XapiIntegration;
-                $response3 = $xapiSender3->CompletedUnit([
-                    'name' => $username,
-                    'email' => $useremail,
-                    'unitUrl' => $CFG->wwwroot . '/course/section.php?id=' . $sectionid,
-                    'unitName' => $section ? $section->name : 'وحدة غير معروفة',
-                    'unitDesc' => $section ? strip_tags($section->summary) : 'لا يوجد وصف لهذه الوحدة',
-                    'instructor' => $inst_name,
-                    'inst_email' => $inst_email,
-                    'courseId' => $courseid,
-                    'courseName' => $DB->get_field('course', 'fullname', ['id' => $courseid]),
-                    'courseDesc' => $DB->get_field('course', 'summary', ['id' => $courseid]),
-                    'courseLang' => $courseLang,
-                ]);
-        
-                NotificationHelper::handleResponse($response3);
-            }
-        }       
-        
-
-        // إرسال إكمال الدورة
-        if( $completion_rate >= 100){
-            $xapiSender22 = new XapiIntegration;
-            $response22 = $xapiSender22->CompletedCourse([
+        if ($last_progress === null || (float)$last_progress !== (float)$completion_rate) {
+            $xapiSender2 = new XapiIntegration;
+            $response2 = $xapiSender2->Progressed([
                 'name' => $username,
                 'email' => $useremail,
                 'courseId' => $courseid,
@@ -240,9 +215,93 @@ class observer {
                 'courseLang' => $courseLang,
                 'instructor' => $inst_name,
                 'inst_email' => $inst_email,
+                'scaled' => $completion_rate > 0 ? round($completion_rate / 100, 2) : 0,
+                'completion' => $completion_rate == 100 ? true : false,
             ]);
-    
-            NotificationHelper::handleResponse($response22);
+            NotificationHelper::handleResponse($response2);
+            if (isset($response2['http_code']) && $response2['http_code'] == 200) {
+                set_user_preference($prefkey_prog, $completion_rate, $userid);
+            }
+        }
+
+        // إرسال إكمال الوحدة
+        $sectionid = NotificationHelper::get_section_id_from_activity($coursemoduleid);
+        if ($sectionid) {
+            $secTCompleted = NotificationHelper::is_section_completed($sectionid, $courseid, $userid);
+            $prefkey_sec = 'local_moodle_lrs_comp_sec_' . $sectionid;
+            
+            if (!$secTCompleted) {
+                set_user_preference($prefkey_sec, null, $userid);
+            } else {
+                if (!get_user_preferences($prefkey_sec, null, $userid)) {
+                    $section = $DB->get_record('course_sections', ['id' => $sectionid], 'name, summary');
+                    
+                    $xapiSender3 = new XapiIntegration;
+                    $response3 = $xapiSender3->CompletedUnit([
+                        'name' => $username,
+                        'email' => $useremail,
+                        'unitUrl' => $CFG->wwwroot . '/course/section.php?id=' . $sectionid,
+                        'unitName' => $section ? $section->name : 'وحدة غير معروفة',
+                        'unitDesc' => $section ? strip_tags($section->summary) : 'لا يوجد وصف لهذه الوحدة',
+                        'instructor' => $inst_name,
+                        'inst_email' => $inst_email,
+                        'courseId' => $courseid,
+                        'courseName' => $DB->get_field('course', 'fullname', ['id' => $courseid]),
+                        'courseDesc' => $DB->get_field('course', 'summary', ['id' => $courseid]),
+                        'courseLang' => $courseLang,
+                    ]);
+            
+                    NotificationHelper::handleResponse($response3);
+                    if (isset($response3['http_code']) && $response3['http_code'] == 200) {
+                        set_user_preference($prefkey_sec, 1, $userid);
+                    }
+                }
+            }
+        }       
+        
+
+        // إرسال إكمال الدورة
+        if( $completion_rate >= 100){
+            $prefkey_course = 'local_moodle_lrs_comp_course_' . $courseid;
+            if (!get_user_preferences($prefkey_course, null, $userid)) {
+                $xapiSender22 = new XapiIntegration;
+                $response22 = $xapiSender22->CompletedCourse([
+                    'name' => $username,
+                    'email' => $useremail,
+                    'courseId' => $courseid,
+                    'courseName' => $coursename,
+                    'courseDesc' => $coursedesc,
+                    'courseLang' => $courseLang,
+                    'instructor' => $inst_name,
+                    'inst_email' => $inst_email,
+                ]);
+        
+                NotificationHelper::handleResponse($response22);
+                if (isset($response22['http_code']) && $response22['http_code'] == 200) {
+                    set_user_preference($prefkey_course, 1, $userid);
+                }
+            }
+
+            $prefkey_earned = 'local_moodle_lrs_earned_' . $courseid;
+            if (!get_user_preferences($prefkey_earned, null, $userid)) {
+                $certUrl = $CFG->wwwroot . '/course/view.php?id=' . $courseid;
+                $certName = $coursename;
+                $xapiSenderEarned = new XapiIntegration;
+                $responseEarned = $xapiSenderEarned->Earned([
+                    'name'       => $username,
+                    'email'      => $useremail,
+                    'courseId'   => $courseid,
+                    'courseName' => $coursename,
+                    'courseDesc' => $coursedesc,
+                    'courseLang' => $courseLang,
+                    'certUrl'    => $certUrl,
+                    'certName'   => $certName,
+                ]);
+                NotificationHelper::handleResponse($responseEarned);
+                if (isset($responseEarned['http_code']) && $responseEarned['http_code'] == 200) {
+                    set_user_preference($prefkey_earned, 1, $userid);
+                }
+            }
         }
     }
 
@@ -339,38 +398,47 @@ class observer {
         $inst_name = $instructor ? fullname($instructor) : 'غير معروف';
         $inst_email = $instructor && !empty($instructor->email) ? $instructor->email : 'unknown@mail.com';        
 
-
-        $xapiSender = new XapiIntegration;
-        $response = $xapiSender->CompletedCourse([
-            'name' => $username,
-            'email' => $useremail,
-            'courseId' => $courseid,
-            'courseName' => $coursename,
-            'courseDesc' => $coursedesc,
-            'courseLang' => $courseLang,
-            'instructor' => $inst_name,
-            'inst_email' => $inst_email,
-        ]);
-
-        NotificationHelper::handleResponse($response);
+        $prefkey_course = 'local_moodle_lrs_comp_course_' . $courseid;
+        if (!get_user_preferences($prefkey_course, null, $userid)) {
+            $xapiSender = new XapiIntegration;
+            $response = $xapiSender->CompletedCourse([
+                'name' => $username,
+                'email' => $useremail,
+                'courseId' => $courseid,
+                'courseName' => $coursename,
+                'courseDesc' => $coursedesc,
+                'courseLang' => $courseLang,
+                'instructor' => $inst_name,
+                'inst_email' => $inst_email,
+            ]);
+            NotificationHelper::handleResponse($response);
+            if (isset($response['http_code']) && $response['http_code'] == 200) {
+                set_user_preference($prefkey_course, 1, $userid);
+            }
+        }
 
         // إرسال حدث Earned (منح الشهادة) فور إتمام الكورس
-        $certUrl = $CFG->wwwroot . '/course/view.php?id=' . $courseid;
-        $certName = $coursename;
+        $prefkey_earned = 'local_moodle_lrs_earned_' . $courseid;
+        if (!get_user_preferences($prefkey_earned, null, $userid)) {
+            $certUrl = $CFG->wwwroot . '/course/view.php?id=' . $courseid;
+            $certName = $coursename;
 
-        $xapiSenderEarned = new XapiIntegration;
-        $responseEarned = $xapiSenderEarned->Earned([
-            'name'       => $username,
-            'email'      => $useremail,
-            'courseId'   => $courseid,
-            'courseName' => $coursename,
-            'courseDesc' => $coursedesc,
-            'courseLang' => $courseLang,
-            'certUrl'    => $certUrl,
-            'certName'   => $certName,
-        ]);
-
-        NotificationHelper::handleResponse($responseEarned);
+            $xapiSenderEarned = new XapiIntegration;
+            $responseEarned = $xapiSenderEarned->Earned([
+                'name'       => $username,
+                'email'      => $useremail,
+                'courseId'   => $courseid,
+                'courseName' => $coursename,
+                'courseDesc' => $coursedesc,
+                'courseLang' => $courseLang,
+                'certUrl'    => $certUrl,
+                'certName'   => $certName,
+            ]);
+            NotificationHelper::handleResponse($responseEarned);
+            if (isset($responseEarned['http_code']) && $responseEarned['http_code'] == 200) {
+                set_user_preference($prefkey_earned, 1, $userid);
+            }
+        }
     }
     
     public static function course_reviewed($event)

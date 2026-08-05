@@ -10,18 +10,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-function local_moodle_lrs_plugin_extend_navigation($nav) {
-    global $PAGE;
-    
-    // إضافة CSS الخاص بـ Izitoast
-    $PAGE->requires->css('/local/moodle_lrs_plugin/assets/izitoast/css/iziToast.min.css', true);
-
-    // إضافة JavaScript الخاص بـ Izitoast
-    $PAGE->requires->js('/local/moodle_lrs_plugin/assets/izitoast/js/iziToast.min.js', true);
-        
-    $PAGE->requires->js('/local/moodle_lrs_plugin/assets/js/frontend.js', true);
-}
-
 // التحقق من نوع الوحدة الدراسية من رابط التحرير
 function get_module_type_from_url() {
     global $PAGE;

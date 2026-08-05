@@ -78,5 +78,10 @@ function xmldb_local_moodle_lrs_plugin_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026072000, 'local', 'moodle_lrs_plugin');
     }
 
+    if ($oldversion < 2026080500) {
+        // No database schema changes, just upgrade plugin savepoint for v2.0.6.
+        upgrade_plugin_savepoint(true, 2026080500, 'local', 'moodle_lrs_plugin');
+    }
+
     return true;
 }

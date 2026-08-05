@@ -153,6 +153,12 @@ Licensed under the **MIT License**. Custom modifications and enterprise support 
 
 ## 🔄 Changelog & Version History
 
+### Version 2.0.6 (Released: 2026-08-05)
+*   **Fixed Certificate Object Validation (CRT001):** Appended course ID parameters to `certificate.object.id` to prevent identical collision matching with the `jws-certificate-location` URL.
+*   **Prevented Duplicate xAPI Statements (SEQ003):** Implemented Moodle User Preferences tracking for course, activity, section completions, and progression rate checks. Handled course resets gracefully (clearing preferences when progression decreases or resets to 0) to support retakes. Added HTTP 200 response validation before marking events as completed.
+*   **Moodle 5.2 Hooks API Compatibility:** Migrated legacy navigation assets injection into new Moodle Hooks API output handlers (`before_standard_head_html_generation` and `before_footer_html_generation`).
+*   **Bumped Minimum Requirements:** Raised minimum Moodle requirements to Moodle 4.4+ to support Hook callbacks.
+
 ### Version 2.0.5 (Released: 2026-07-20)
 *   **Fixed Division by Zero in Quizzes:** Corrected a calculation crash in `observer::quiz_attempt_submitted()` when graded quizzes had a maximum grade of `0`.
 *   **Fixed Syntax Error in Progress Tracking:** Added a missing semicolon in `Progressed.php` that threw a `ParseError` on student progress updates.
@@ -164,4 +170,4 @@ Licensed under the **MIT License**. Custom modifications and enterprise support 
 ---
 **Developed by:** Mohammed Hassan  
 **Copyright:** 2025-2026  
-**Version:** 2.0.5 (Build 2026072000)
+**Version:** 2.0.6 (Build 2026080500)

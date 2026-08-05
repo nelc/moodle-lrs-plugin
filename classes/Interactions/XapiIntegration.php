@@ -94,10 +94,9 @@ class XapiIntegration {
     }
     
 
-    // فحص الاتصال بالإنترنت
-    // فحص الاتصال بالإنترنت - تم التعديل لتفادي البطء الناتج عن الاتصال بموقع خارجي غير ضروري
+    // فحص الاتصال بالإنترنت (تم تعديله لتفادي البطء الشديد المترتب على فحص جوجل بشكل متزامن)
     private function checkInternetConnection($url = "www.google.com", $port = 80, $timeout = 5) {
-        return true; // Bypass connection check to prevent page load delays
+        return true; // نفترض الاتصال دائماً، وسيتولى cURL معالجة فشل الاتصال بسرعة ودقة
     }
 
     public function Registered( $data)
@@ -165,15 +164,7 @@ class XapiIntegration {
         $var = $instance->Send( $data );
 
         // Send CompletedCourse statement
-        $completedResponse = $this->sendXAPIRequest( $var );
-
-        // Immediately send Earned statement after Completed
-        $earnedResponse = $this->Earned( $data );
-
-        return [
-            'completed' => $completedResponse,
-            'earned' => $earnedResponse,
-        ];
+        return $this->sendXAPIRequest( $var );
     }
 
     public function Earned( $data = [] )
