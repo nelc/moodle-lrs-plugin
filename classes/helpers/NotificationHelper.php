@@ -27,24 +27,34 @@ class NotificationHelper {
     }
 
     public static function handleResponse($response) {
+        // إظهار الإشعارات فقط إذا كان الخيار مُفعَّلاً في الإعدادات
+        $show_notifications = get_config('local_moodle_lrs_plugin', 'show_notifications');
+
         if (!empty($response)) {
             if (isset($response['http_code'])) {
                 if ($response['http_code'] == 200) {
-                    \core\notification::success('تم إرسال التقرير للمركز الوطني NELC !' . $response['response']);
+                    if ($show_notifications) {
+                        \core\notification::success('تم إرسال التقرير للمركز الوطني NELC !' . $response['response']);
+                    }
                 } else {
-                    \core\notification::warning('لم يتم إرسال التقرير للمركز الوطني NELC: ' . $response['http_code']);
-                    \core\notification::warning('<pre>' . print_r($response['response'], true) . '</pre>');
-
+                    if ($show_notifications) {
+                        \core\notification::warning('لم يتم إرسال التقرير للمركز الوطني NELC: ' . $response['http_code']);
+                        \core\notification::warning('<pre>' . print_r($response['response'], true) . '</pre>');
+                    }
                 }
 
-                if (!empty($response['error'])) {
+                if (!empty($response['error']) && $show_notifications) {
                     \core\notification::error('خطأ في إرسال البيانات: ' . $response['error']);
                 }
             } else {
-                \core\notification::info('لم يتم تلقي رمز استجابة، الرد: ' . json_encode($response));
+                if ($show_notifications) {
+                    \core\notification::info('لم يتم تلقي رمز استجابة، الرد: ' . json_encode($response));
+                }
             }
         } else {
-            \core\notification::warning('لم يتم إرسال أي بيانات.');
+            if ($show_notifications) {
+                \core\notification::warning('لم يتم إرسال أي بيانات.');
+            }
         }
     }
 

@@ -65,3 +65,5 @@ $string['hours'] = 'ساعات';
 $string['minutes'] = 'دقائق';
 $string['numeric'] = 'يجب إدخال قيمة رقمية';
 $string['maxminutes'] = 'يجب أن تكون الدقائق أقل من 60';
+$string['show_notifications'] = 'إظهار إشعارات إرسال العبارات';
+$string['show_notifications_desc'] = 'عند التفعيل، سيتم عرض إشعار للمستخدم بعد كل إرسال ناجح أو فاشل لعبارة xAPI إلى نظام LRS.';

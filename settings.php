@@ -68,6 +68,14 @@ if ($hassiteconfig) {
         PARAM_TEXT
     ));
 
+    // تفعيل/تعطيل إشعارات الإرسال للمستخدم.
+    $settings->add(new admin_setting_configcheckbox(
+        'local_moodle_lrs_plugin/show_notifications',
+        get_string('show_notifications', 'local_moodle_lrs_plugin'),
+        get_string('show_notifications_desc', 'local_moodle_lrs_plugin'),
+        0 // القيمة الافتراضية: مُعطَّل
+    ));
+
     $ADMIN->add('local_moodle_lrs_plugin_category', $settings);
 
     // التبويب الثاني: صفحة اختبار الاتصال

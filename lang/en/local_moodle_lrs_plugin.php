@@ -65,3 +65,5 @@ $string['hours'] = 'hours';
 $string['minutes'] = 'minutes';
 $string['numeric'] = 'You must enter a numeric value';
 $string['maxminutes'] = 'Minutes must be less than 60';
+$string['show_notifications'] = 'Show statement notifications';
+$string['show_notifications_desc'] = 'When enabled, a notification will be displayed to the user after each xAPI statement is sent to the LRS.';
