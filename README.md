@@ -153,6 +153,9 @@ Licensed under the **MIT License**. Custom modifications and enterprise support 
 
 ## 🔄 Changelog & Version History
 
+### Version 2.0.7 (Released: 2026-09-08)
+*   **Added Notification Toggle Setting:** A new checkbox setting has been added to the plugin's admin settings page. Administrators can now enable or disable the xAPI statement delivery notifications shown to users after each event is sent to the LRS. Notifications are **disabled by default** to avoid unnecessary alerts in production environments.
+
 ### Version 2.0.6 (Released: 2026-08-05)
 *   **Fixed Certificate Object Validation (CRT001):** Appended course ID parameters to `certificate.object.id` to prevent identical collision matching with the `jws-certificate-location` URL.
 *   **Prevented Duplicate xAPI Statements (SEQ003):** Implemented Moodle User Preferences tracking for course, activity, section completions, and progression rate checks. Handled course resets gracefully (clearing preferences when progression decreases or resets to 0) to support retakes. Added HTTP 200 response validation before marking events as completed.
@@ -170,4 +173,4 @@ Licensed under the **MIT License**. Custom modifications and enterprise support 
 ---
 **Developed by:** Mohammed Hassan  
 **Copyright:** 2025-2026  
-**Version:** 2.0.6 (Build 2026080500)
+**Version:** 2.0.7 (Build 2026090800)
